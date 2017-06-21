@@ -6,27 +6,29 @@
 	<title>DOM实现的五子棋</title>
 	<style>
 		/*按钮位置{*/
-		#g-footer{
-			text-align: center;	
+
+		#g-footer {
+			text-align: center;
 		}
-		#g-footer button{
+
+		#g-footer button {
 			height: 30px;
 			width: 100px;
 		}
 		/*}按钮位置*/
-
 		/*棋盘样式{*/
+
 		#chess {
 			position: relative;
 			margin: 50px auto;
 			padding: 15px;
 			width: 420px;
 			height: 420px;
-			border: 1px solid red;
+			border: 1px solid black;
 		}
 		/*}棋盘样式*/
-
 		/*棋盘格样式{*/
+
 		#chess>.chessboard {
 			float: left;
 			width: 30px;
@@ -35,8 +37,8 @@
 			border: 1px solid #BFBFBF;
 		}
 		/*}棋盘格样式*/
-
 		/*黑棋子样式{*/
+
 		#chess .black_piece {
 			position: absolute;
 			width: 26px;
@@ -47,8 +49,8 @@
 			background: radial-gradient(circle farthest-side, #636766, #0A0A0A);
 		}
 		/*}黑棋子样式*/
-		
 		/*白棋子样式{*/
+
 		#chess .white_piece {
 			position: absolute;
 			width: 26px;
@@ -75,7 +77,7 @@
 		<button type="button" id="revert" onclick="revert()">悔棋</button>
 		<button type="button" id="removeRevert" onclick="removeRevert()">撤销悔棋</button>
 	</div>
-	
+
 	<script type="text/javascript">
 		/*DOM实现五子棋
 @Author：黄俊豪
@@ -263,7 +265,7 @@
 
 		//悔棋事件
 		var revert = function () {
-			if (config.num != 0) {
+			if (!config.over && config.num != 0) {
 				var oldChess = $('#chess' + config.num)[0];//取得最近一步的棋子
 				oldChess.parentNode.removeChild(oldChess);//把最近一步棋子的dom结构给干掉
 
@@ -293,7 +295,7 @@
 
 		//撤销悔棋事件
 		var removeRevert = function () {
-			if (config.chessX[config.num] != undefined) {
+			if (!config.over && config.chessX[config.num] != undefined) {
 				i = config.chessX[config.num];//撤销到之前那一步，不要num++，因为drawChess里面有num++这个函数，自动加1
 				j = config.chessY[config.num];
 				if (config.currentChess) {
@@ -325,7 +327,6 @@
 
 		//初始化棋盘
 		drawChessBoard();
-		
 	</script>
 </body>
 
