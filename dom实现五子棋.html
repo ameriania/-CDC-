@@ -90,8 +90,8 @@
 		//模拟JQ的写法，提高获取元素效率
 		var $ = document.querySelectorAll.bind(document);
 
-		//本人偏向于把所有变量放入domConfig中，减少全局变量数量
-		var domConfig = {
+		//本人偏向于把所有变量放入dConfig中，减少全局变量数量
+		var dConfig = {
 			chessBoard: [],//二维数组用来保存棋盘信息，0为没有走过的，1为黑棋，2为白棋
 			currentChess: true,//目前正要下的棋子的颜色，初始化为true表示黑子棋子。false表示白色棋子
 			over: false,//标志游戏是否结束，有一方赢了就表示结束
@@ -107,17 +107,17 @@
 
 		//初始化棋盘信息，将二维数组所有项全部初始化为0
 		for (var i = 0; i < 15; i++) {
-			domConfig.chessBoard[i] = [];
+			dConfig.chessBoard[i] = [];
 			for (var j = 0; j < 15; j++) {
-				domConfig.chessBoard[i][j] = 0;
+				dConfig.chessBoard[i][j] = 0;
 			}
 		}
 
 		//初始化枚举赢法的数组，为一个三维数组
 		for (var i = 0; i < 15; i++) {
-			domConfig.wins[i] = [];
+			dConfig.wins[i] = [];
 			for (var j = 0; j < 15; j++) {
-				domConfig.wins[i][j] = [];
+				dConfig.wins[i][j] = [];
 			}
 		}
 
@@ -125,9 +125,9 @@
 		for (var i = 0; i < 15; i++) {
 			for (var j = 0; j < 11; j++) {
 				for (var k = 0; k < 5; k++) {
-					domConfig.wins[i][j + k][domConfig.count] = true;
+					dConfig.wins[i][j + k][dConfig.count] = true;
 				}
-				domConfig.count++;
+				dConfig.count++;
 			}
 		}
 
@@ -135,9 +135,9 @@
 		for (var i = 0; i < 15; i++) {
 			for (var j = 0; j < 11; j++) {
 				for (var k = 0; k < 5; k++) {
-					domConfig.wins[j + k][i][domConfig.count] = true;
+					dConfig.wins[j + k][i][dConfig.count] = true;
 				}
-				domConfig.count++;
+				dConfig.count++;
 			}
 		}
 
@@ -146,9 +146,9 @@
 		for (var i = 0; i < 11; i++) {
 			for (var j = 0; j < 11; j++) {
 				for (var k = 0; k < 5; k++) {
-					domConfig.wins[i + k][j + k][domConfig.count] = true;
+					dConfig.wins[i + k][j + k][dConfig.count] = true;
 				}
-				domConfig.count++;
+				dConfig.count++;
 			}
 		}
 
@@ -156,17 +156,17 @@
 		for (var i = 0; i < 11; i++) {
 			for (var j = 14; j > 3; j--) {
 				for (var k = 0; k < 5; k++) {
-					domConfig.wins[i + k][j - k][domConfig.count] = true;
+					dConfig.wins[i + k][j - k][dConfig.count] = true;
 				}
-				domConfig.count++;
+				dConfig.count++;
 			}
 		}
 
 
 		//分别初始化黑白两棋子在某种赢法的情况下已经有的棋子为0
-		for (var i = 0; i < domConfig.count; i++) {
-			domConfig.blackWin[i] = 0;
-			domConfig.whiteWin[i] = 0;
+		for (var i = 0; i < dConfig.count; i++) {
+			dConfig.blackWin[i] = 0;
+			dConfig.whiteWin[i] = 0;
 		}
 
 
@@ -193,15 +193,15 @@
 		*/
 		var drawChess = function (i, j) {
 
-			domConfig.num++;//已下棋子数加1
+			dConfig.num++;//已下棋子数加1
 
 			chess_piece = document.createElement('div');
-			if (domConfig.currentChess) {//设置黑棋对应的css类
+			if (dConfig.currentChess) {//设置黑棋对应的css类
 				chess_piece.className = 'black_piece';//通过类直接加样式，不用过css
-				chess_piece.id = 'chess' + domConfig.num;//给每一个棋子设置唯一的id，便于悔棋和撤销悔棋操作
+				chess_piece.id = 'chess' + dConfig.num;//给每一个棋子设置唯一的id，便于悔棋和撤销悔棋操作
 			} else {//设置白棋对应的CSS类
 				chess_piece.className = 'white_piece';
-				chess_piece.id = 'chess' + domConfig.num;
+				chess_piece.id = 'chess' + dConfig.num;
 			}
 
 			chess.appendChild(chess_piece);
@@ -214,11 +214,12 @@
 		设置鼠标点击处理事件
 		*/
 		chess.onclick = function (e) {
-			if (domConfig.over) {
+			if (dConfig.over) {
 				alert("本轮游戏已经结束了，请刷新浏览器重新开始！");
 				return;
 			}
 
+			console.log(e.target);
 			//获取点击的位置相当于棋盘左上角的位置
 			var x = e.clientX - chessLeft;
 			var y = e.clientY - chessTop;
@@ -227,67 +228,67 @@
 			var j = Math.floor(y / 30);
 
 
-			if (domConfig.chessBoard[i][j] === 0) {//在画棋子之前先判断一下棋盘上该位置是否已经有了棋子，为空时才允许放置
+			if (dConfig.chessBoard[i][j] === 0) {//在画棋子之前先判断一下棋盘上该位置是否已经有了棋子，为空时才允许放置
 				drawChess(i, j);//画棋子
-				if (domConfig.currentChess) {//如果放下的棋子为黑棋
-					domConfig.chessX.push(i);//存入棋子的横纵坐标
-					domConfig.chessY.push(j);
-					domConfig.chessBoard[i][j] = 1;
-					for (var k = 0; k < domConfig.count; k++) {//遍历所有赢法
-						if (domConfig.wins[i][j][k]) {
-							domConfig.blackWin[k]++;
-							domConfig.whiteWin[k] = undefined;
-							if (domConfig.blackWin[k] === 5) {//如果黑棋在第k中赢法中已经有了5颗棋子，说明黑棋赢了
+				if (dConfig.currentChess) {//如果放下的棋子为黑棋
+					dConfig.chessX.push(i);//存入棋子的横纵坐标
+					dConfig.chessY.push(j);
+					dConfig.chessBoard[i][j] = 1;
+					for (var k = 0; k < dConfig.count; k++) {//遍历所有赢法
+						if (dConfig.wins[i][j][k]) {
+							dConfig.blackWin[k]++;
+							dConfig.whiteWin[k] = undefined;
+							if (dConfig.blackWin[k] === 5) {//如果黑棋在第k中赢法中已经有了5颗棋子，说明黑棋赢了
 								alert('黑棋赢了！\r\n 应聘者：黄俊豪，职位：前端开发，电话：131-4584-2547');
-								domConfig.over = true;
+								dConfig.over = true;
 							}
 						}
 					}
 				} else {//如果放下的棋子为白棋
-					domConfig.chessX.push(i);//存入棋子的横纵坐标
-					domConfig.chessY.push(j);
-					domConfig.chessBoard[i][j] = 2;
-					for (var k = 0; k < domConfig.count; k++) {
-						if (domConfig.wins[i][j][k]) {
-							domConfig.whiteWin[k]++;
-							domConfig.blackWin[k] = undefined;
-							if (domConfig.whiteWin[k] === 5) {//如果白棋在第k中赢法中已经有了5颗棋子,说明白棋赢了
+					dConfig.chessX.push(i);//存入棋子的横纵坐标
+					dConfig.chessY.push(j);
+					dConfig.chessBoard[i][j] = 2;
+					for (var k = 0; k < dConfig.count; k++) {
+						if (dConfig.wins[i][j][k]) {
+							dConfig.whiteWin[k]++;
+							dConfig.blackWin[k] = undefined;
+							if (dConfig.whiteWin[k] === 5) {//如果白棋在第k中赢法中已经有了5颗棋子,说明白棋赢了
 								alert('白棋赢了！\r\n 应聘者：黄俊豪，职位：前端开发，电话：131-4584-2547');
-								domConfig.over = true;
+								dConfig.over = true;
 							}
 						}
 					}
 				}
-				domConfig.currentChess = !domConfig.currentChess;//将下一步棋的颜色进行反转		
+				dConfig.currentChess = !dConfig.currentChess;//将下一步棋的颜色进行反转		
 			}
 
 		}
 
 		//悔棋事件
 		var revert = function () {
-			if (!domConfig.over && domConfig.num != 0) {
-				var oldChess = $('#chess' + domConfig.num)[0];//取得最近一步的棋子
+			if (!dConfig.over && dConfig.num != 0) {
+				var oldChess = $('#chess' + dConfig.num)[0];//取得最近一步的棋子
 				oldChess.parentNode.removeChild(oldChess);//把最近一步棋子的dom结构给干掉
 
-				i = domConfig.chessX[domConfig.num - 1];//取得最近一步棋子的横纵坐标，不用pop，因为还有撤销功能
-				j = domConfig.chessY[domConfig.num - 1];
-				domConfig.chessBoard[i][j] = 0;
-				if (!domConfig.currentChess) {//把胜利统计减掉
-					for (var k = 0; k < domConfig.count; k++) {
-						if (domConfig.wins[i][j][k]) {
-							domConfig.blackWin[k]--;
+				i = dConfig.chessX[dConfig.num - 1];//取得最近一步棋子的横纵坐标，不用pop，因为还有撤销功能
+				j = dConfig.chessY[dConfig.num - 1];
+				dConfig.chessBoard[i][j] = 0;
+				if (!dConfig.currentChess) {//把胜利统计减掉
+					for (var k = 0; k < dConfig.count; k++) {
+						if (dConfig.wins[i][j][k]) {
+							dConfig.blackWin[k]--;
 						}
 					}
 				} else {
-					for (var k = 0; k < domConfig.count; k++) {
-						if (domConfig.wins[i][j][k]) {
-							domConfig.whiteWin[k]--;
+					for (var k = 0; k < dConfig.count; k++) {
+						if (dConfig.wins[i][j][k]) {
+							dConfig.whiteWin[k]--;
 						}
 					}
 				}
-				domConfig.currentChess = !domConfig.currentChess;
+				dConfig.currentChess = !dConfig.currentChess;
 
-				domConfig.num--;//已下棋子数要减1
+				dConfig.num--;//已下棋子数要减1
 			} else {
 				alert('悔无可悔！\r\n 应聘者：黄俊豪，职位：前端开发，电话：131-4584-2547');
 			}
@@ -295,32 +296,32 @@
 
 		//撤销悔棋事件
 		var removeRevert = function () {
-			if (!domConfig.over && domConfig.chessX[domConfig.num] != undefined) {
-				i = domConfig.chessX[domConfig.num];//撤销到之前那一步，不要num++，因为drawChess里面有num++这个函数，自动加1
-				j = domConfig.chessY[domConfig.num];
-				if (domConfig.currentChess) {
-					if (domConfig.chessBoard[i][j] == 0) {
+			if (!dConfig.over && dConfig.chessX[dConfig.num] != undefined) {
+				i = dConfig.chessX[dConfig.num];//撤销到之前那一步，不要num++，因为drawChess里面有num++这个函数，自动加1
+				j = dConfig.chessY[dConfig.num];
+				if (dConfig.currentChess) {
+					if (dConfig.chessBoard[i][j] == 0) {
 						drawChess(i, j);
-						domConfig.chessBoard[i][j] = 1;//黑子
-						for (var k = 0; k < domConfig.count; k++) {
-							if (domConfig.wins[i][j][k]) {
-								domConfig.blackWin[k]++;
+						dConfig.chessBoard[i][j] = 1;//黑子
+						for (var k = 0; k < dConfig.count; k++) {
+							if (dConfig.wins[i][j][k]) {
+								dConfig.blackWin[k]++;
 							}
 						}
 
 					}
 				} else {
-					if (domConfig.chessBoard[i][j] == 0) {
+					if (dConfig.chessBoard[i][j] == 0) {
 						drawChess(i, j);
-						domConfig.chessBoard[i][j] = 2;//白子
-						for (var k = 0; k < domConfig.count; k++) {
-							if (domConfig.wins[i][j][k]) {
-								domConfig.whiteWin[k]++;
+						dConfig.chessBoard[i][j] = 2;//白子
+						for (var k = 0; k < dConfig.count; k++) {
+							if (dConfig.wins[i][j][k]) {
+								dConfig.whiteWin[k]++;
 							}
 						}
 					}
 				}
-				domConfig.currentChess = !domConfig.currentChess;
+				dConfig.currentChess = !dConfig.currentChess;
 			}
 		}
 
