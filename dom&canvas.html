@@ -150,7 +150,7 @@
         <div id="d-chess"></div>
         <div class="m-footer">
             <a href="javascript:;" id="d-revert">悔棋</a>
-            <a href="javascript:;" id="d-disrevert">撤销</a>
+            <a href="javascript:;" id="d-removeRevert">撤销</a>
         </div>
         <p>姓名:黄俊豪 应聘职位:前端开发 电话:131-4584-2547</p>
     </article>
@@ -165,7 +165,7 @@
         <canvas id="bgchess" width="450px" height="450px">你的浏览器不支持HTML5 canvas,请使用最新版Chrome浏览器打开.</canvas>
         <div class="m-footer">
             <a href="javascript:;" id="c-revert">悔棋</a>
-            <a href="javascript:;" id="c-disrevert">撤销</a>
+            <a href="javascript:;" id="c-removeRevert">撤销</a>
         </div>
         <p>姓名:黄俊豪 应聘职位:前端开发 电话:131-4584-2547</p>
     </article>
@@ -189,8 +189,6 @@
             context = el.cChess.getContext('2d'),
             bgcontext = el.bgchess.getContext('2d');
 
-        context.strokeStyle = "#FFFFFF";
-
         //canvas棋盘的配置
         var cConfig = {
             chessBoard: [],//二维数组用来保存棋盘信息，0为没有走过的，1为黑棋，2为白棋
@@ -203,7 +201,7 @@
             wins: [],//赢法数组，用来记录所有可能的赢法方案，
             blackWin: [],//赢法的统计数组，分别统计黑棋和白棋在上面所有赢法方案中已经完成了几颗棋子了
             whiteWin: [],
-            name:'cConfig'//进行判别配置
+            name: 'cConfig'//进行判别配置
         }
 
         //dom棋盘的配置
@@ -218,7 +216,7 @@
             wins: [],//赢法数组，用来记录所有可能的赢法方案，
             blackWin: [],//赢法的统计数组，分别统计黑棋和白棋在上面所有赢法方案中已经完成了几颗棋子了
             whiteWin: [],
-            name:'dConfig'
+            name: 'dConfig'
         }
 
 
@@ -422,42 +420,75 @@
         }
 
         //悔棋事件
-		var revert = function (config) {
+        var revert = function (config) {
 
-			if (!config.over && config.num != 0) {
-                if(config.name=='cConfig'){
+            if (!config.over && config.num != 0) {
+
+                i = config.chessX[config.num - 1];//取得最近一步棋子的横纵坐标，不用pop，因为还有撤销功能
+                j = config.chessY[config.num - 1];
+                config.chessBoard[i][j] = 0;
+
+                //这一段的顺序不能变化，因为canvasi，j的值需要先改变，dom的i，j不受影响。
+                if (config.name == 'cConfig') {
                     //canvas悔棋
                     context.clearRect(i * 30, j * 30, 30, 30);//干掉颜色，这个只干掉棋子板的，不会干掉背景板的
-                }else if(config.name=='dConfig'){
+                } else if (config.name == 'dConfig') {
                     //dom悔棋
-                    var oldChess = $('#d-chess' + dConfig.num)[0];//取得最近一步的棋子
-				    oldChess.parentNode.removeChild(oldChess);//把最近一步棋子的dom结构给干掉
+                    var oldChess = $('#chess' + config.num)[0];//取得最近一步的棋子
+                    oldChess.parentNode.removeChild(oldChess);//把最近一步棋子的dom结构给干掉
                 }
 
-				i = config.chessX[config.num - 1];//取得最近一步棋子的横纵坐标，不用pop，因为还有撤销功能
-				j = config.chessY[config.num - 1];
-				config.chessBoard[i][j] = 0;
+                if (!config.currentChess) {//把胜利统计减掉
+                    for (var k = 0; k < config.count; k++) {
+                        if (config.wins[i][j][k]) {
+                            config.blackWin[k]--;
+                        }
+                    }
+                } else {
+                    for (var k = 0; k < config.count; k++) {
+                        if (config.wins[i][j][k]) {
+                            config.whiteWin[k]--;
+                        }
+                    }
+                }
+                config.currentChess = !config.currentChess;
 
-				if (!config.currentChess) {//把胜利统计减掉
-					for (var k = 0; k < config.count; k++) {
-						if (config.wins[i][j][k]) {
-							config.blackWin[k]--;
-						}
-					}
-				} else {
-					for (var k = 0; k < config.count; k++) {
-						if (config.wins[i][j][k]) {
-							config.whiteWin[k]--;
-						}
-					}
-				}
-				config.currentChess = !config.currentChess;
+                config.num--;//已下棋子数要减1
+            } else {
+                alert('悔无可悔！\r\n 应聘者：黄俊豪，职位：前端开发，电话：131-4584-2547');
+            }
+        }
 
-				config.num--;//已下棋子数要减1
-			} else {
-				alert('悔无可悔！\r\n 应聘者：黄俊豪，职位：前端开发，电话：131-4584-2547');
-			}
-		}
+        //撤销悔棋事件
+        var removeRevert = function (config, fn) {
+            if (!config.over && config.chessX[config.num] != undefined) {
+                i = config.chessX[config.num];//撤销到之前那一步，不要num++，因为drawChess里面有num++这个函数，自动加1
+                j = config.chessY[config.num];
+                if (config.currentChess) {
+                    if (config.chessBoard[i][j] == 0) {
+                        fn(i, j);
+                        config.chessBoard[i][j] = 1;//黑子
+                        for (var k = 0; k < config.count; k++) {
+                            if (config.wins[i][j][k]) {
+                                config.blackWin[k]++;
+                            }
+                        }
+
+                    }
+                } else {
+                    if (config.chessBoard[i][j] == 0) {
+                        fn(i, j);
+                        config.chessBoard[i][j] = 2;//白子
+                        for (var k = 0; k < config.count; k++) {
+                            if (config.wins[i][j][k]) {
+                                config.whiteWin[k]++;
+                            }
+                        }
+                    }
+                }
+                config.currentChess = !config.currentChess;
+            }
+        }
 
         //统一管理页面的点击事件
         $('body')[0].addEventListener('click', function (e) {
@@ -466,7 +497,7 @@
                 dx = e.clientX - chessLeft,//获取dom棋盘的棋子位置
                 dy = e.clientY - chessTop;
 
-            switch (target.id||target.className) {
+            switch (target.id || target.className) {
                 //页面动画：切段棋盘
                 case 'c-Tg':
                 case 'd-Tg':
@@ -494,13 +525,23 @@
                     break;
 
                 case 'd-revert':
-                //dom悔棋
+                    //dom悔棋
                     revert(dConfig);
                     break;
-                
+
                 case 'c-revert':
-                //canvas悔棋
+                    //canvas悔棋
                     revert(cConfig);
+                    break;
+
+                case 'd-removeRevert':
+                    //dom撤销
+                    removeRevert(dConfig, drawDChess);
+                    break;
+
+                case 'c-removeRevert':
+                    //canvas撤销
+                    removeRevert(cConfig, drawCChess);
                     break;
 
                 default:
